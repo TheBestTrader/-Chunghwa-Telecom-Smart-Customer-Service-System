@@ -1,0 +1,21 @@
+# Environment & secrets — NEVER commit API keys
+.env
+.env.*
+!.env.example
+
+# Python cache
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Streamlit local config
+.streamlit/secrets.toml
+
+# OS artifacts
+.DS_Store
+Thumbs.db
