@@ -74,9 +74,9 @@ def build_graph(api_key: str, model_name: str):
     def tech_node(state: AgentState) -> dict:
         system = SystemMessage(content=(
             "你是中華電信技術客服 (Tech Agent)，負責處理斷線、設備異常。"
-            "請先使用工具查詢網路狀態或建立維修工單，再根據查詢結果以專業簡潔的語氣協助用戶排障。"
-            "若用戶未提供地點，請以「信義區」作為預設地點。若用戶未提供 user_id，請以「U001」作為預設值。"
-            "回覆請使用繁體中文。"
+            "【強制行動規則】收到用戶問題後，你必須立刻且直接調用對應的工具，絕對不可以回覆「請稍等」、「我幫您查詢」、「請問您的地址是？」等任何過場文字或反問句。"
+            "【預設值規則】若用戶未提供地點，直接使用「信義區」；若未提供 user_id，直接使用「U001」。不得以任何理由等待用戶確認，立即以預設值呼叫工具。"
+            "工具調用完畢後，根據工具回傳的真實資料，以專業簡潔的繁體中文回覆用戶。"
         ))
         llm_with_tools = llm.bind_tools(_TECH_TOOLS)
         response = llm_with_tools.invoke([system] + _strip_broadcasts(state["messages"]))
@@ -85,9 +85,9 @@ def build_graph(api_key: str, model_name: str):
     def sales_node(state: AgentState) -> dict:
         system = SystemMessage(content=(
             "你是中華電信業務客服 (Sales Agent)，負責處理資費升級、續約。"
-            "請先使用工具查詢用戶目前方案，再推薦適合的升級方案，以親切的語氣說明優惠內容。"
-            "若用戶未提供 user_id，請以「U001」作為預設值。"
-            "回覆請使用繁體中文。"
+            "【強制行動規則】收到用戶問題後，你必須立刻且直接調用對應的工具，絕對不可以回覆「請稍等」、「我幫您查詢」、「請問您的帳號是？」等任何過場文字或反問句。"
+            "【預設值規則】若用戶未提供 user_id 或身分證，直接使用「U001」；工具回傳目前方案後，立即接著呼叫推薦方案工具，不得停頓或等待用戶確認。"
+            "工具調用完畢後，根據工具回傳的真實資料，以親切的繁體中文說明方案內容與優惠。"
         ))
         llm_with_tools = llm.bind_tools(_SALES_TOOLS)
         response = llm_with_tools.invoke([system] + _strip_broadcasts(state["messages"]))
