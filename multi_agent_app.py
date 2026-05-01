@@ -45,6 +45,12 @@ def run_agent_graph(history: list, model: str, dev_mode: bool, api_key: str) -> 
         result = graph.invoke({"messages": lc_messages, "intent": ""})
 
         msgs = result["messages"]
+
+        def extract_text(content) -> str:
+            if isinstance(content, list):
+                return "".join(block.get("text", "") for block in content if isinstance(block, dict))
+            return content or ""
+
         # Only search for the broadcast in messages added THIS turn (after the
         # last HumanMessage). Searching from the start would return a stale
         # broadcast from a previous turn stored in the conversation history.
@@ -54,12 +60,12 @@ def run_agent_graph(history: list, model: str, dev_mode: bool, api_key: str) -> 
         )
         current_turn_msgs = msgs[last_human_idx + 1:]
         broadcast = next(
-            (m for m in current_turn_msgs if isinstance(m, AIMessage) and m.content.startswith("🚦")),
+            (m for m in current_turn_msgs if isinstance(m, AIMessage) and extract_text(m.content).startswith("🚦")),
             None,
         )
-        final = msgs[-1].content
-        if broadcast and broadcast.content != final:
-            return [broadcast.content, final]
+        final = extract_text(msgs[-1].content)
+        if broadcast and extract_text(broadcast.content) != final:
+            return [extract_text(broadcast.content), final]
         return [final]
     except Exception as e:
         return [f"⚠️ Agent 執行發生錯誤：{e}"]
